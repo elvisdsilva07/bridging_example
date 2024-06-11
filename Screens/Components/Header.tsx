@@ -8,11 +8,11 @@ import {
 
 
 type Props = {
-  getSms: ()=> void;
+//   getSms?: ()=> void;
   count: number;
 };
 
-const Header = ({getSms, count}:Props) => {
+const Header = ({count}:Props) => {
     const isDarkMode = useColorScheme() === 'dark';
     
       const TextColor = {
@@ -23,11 +23,11 @@ const Header = ({getSms, count}:Props) => {
         <Text style={[styles.titleText, [TextColor]]}>
            {count} SMS
         </Text>
-        <Button
+        {/* <Button
           title="GetSMS"
           color="#841584"
           onPress={getSms}
-        />
+        /> */}
     </View>
   );
 };

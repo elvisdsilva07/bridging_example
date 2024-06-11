@@ -44,6 +44,7 @@ const SmsScreen: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [hasMore, setHasMore] = useState<boolean>(true);
     const [page, setPage] = useState<number>(1);
+    const [refreshing, setRefreshing] = useState<boolean>(false);
 
     useEffect(() => {
         const getPermissionAndFetchSms = async () => {
@@ -57,32 +58,6 @@ const SmsScreen: React.FC = () => {
         getPermissionAndFetchSms();
     }, []);
 
-    
-
-
-    // const requestReadSmsPermission = async () => {
-    //     try {
-    //         const granted = await PermissionsAndroid.request(
-    //           PermissionsAndroid.PERMISSIONS.READ_SMS,
-    //           {
-    //             title: 'SMS Permission',
-    //             message: 'This app needs access to your SMS messages.',
-    //             buttonNeutral: 'Ask Me Later',
-    //             buttonNegative: 'Cancel',
-    //             buttonPositive: 'OK',
-    //           },
-    //         );
-    //         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        
-    //           await readSmsFunction()
-    //         } else {
-    //           console.log('Read SMS permission denied');
-    //         }
-    //       } catch (err) {
-    //         console.warn(err);
-    //       }
-    //   };
-      
     const fetchSms = async () => {
         if (loading) return;
         setLoading(true);
@@ -122,16 +97,27 @@ const SmsScreen: React.FC = () => {
         }
     };
 
-
     const renderFooter = () => {
         if (!loading) return null;
         return <ActivityIndicator size="large" style={{ margin: 20 }} />;
     };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        setListSmsAll([]);  // Clear current data
+        setListSms([]);  // Clear current data
+        setPage(1);      // Reset page to 1
+        setHasMore(true); // Reset hasMore to true
+        await fetchSms();
+        setRefreshing(false);
+      };
     return (
         <>
-        <Header getSms={fetchSms} count={listSmsAll.length}/>
-        {listSmsAll.length === 0 && !loading ? <Text>No SMS messages found.</Text> :
-        <FlatList
+        <Header count={listSmsAll.length}/>
+        {loading && listSms.length === 0 ? 
+            <ActivityIndicator size="large"/>
+            : listSms.length === 0 && !loading ? <Text>No SMS messages found.</Text>
+            : <FlatList
             data={listSms}
             renderItem={({item}:any)=>(  
                 <ListItem title={item.sender}>
@@ -143,6 +129,12 @@ const SmsScreen: React.FC = () => {
             onEndReached={loadMoreSms}
             onEndReachedThreshold={0.5}
             extraData={listSms}
+            getItemLayout={(data, index) => (
+                {length: 60, offset: 60 * index, index}
+              )}
+            initialNumToRender={20}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
           /> 
         }
         </>
